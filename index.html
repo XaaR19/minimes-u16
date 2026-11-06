@@ -1,0 +1,752 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta property="og:title" content="Benjamins U14 : points FFA">
+<meta property="og:description" content="Calcul des points du triathlon, benjamines et benjamins.">
+<style>*,*::before,*::after{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0}</style>
+<title>Cotation Benjamins U14</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: one column; each discipline is one framed list, one line per event: event, performance, points */
+:root{
+  --bg:#eef1f4; --surface:#ffffff; --ink:#13202c; --muted:#5a6a78; --line:#d5dce3;
+  --accent:#d1431a; --accent-ink:#ffffff; --track:#e2e8ee; --ok:#1f7a4d; --warn:#9a5b00;
+  --tA:#e1ebf4; --tB:#f1eadf; --tC:#e1eee6;
+  --f-display:'Barlow Condensed','Arial Narrow',sans-serif; --f-body:'Barlow',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f1820; --surface:#17232d; --ink:#e8eef3; --muted:#92a3b1; --line:#2a3a47;
+  --accent:#ff7a4d; --accent-ink:#1a0d07; --track:#243441; --ok:#5fd39b; --warn:#f0b35a; --tA:#15283a; --tB:#2a2519; --tC:#15301f; color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#0f1820; --surface:#17232d; --ink:#e8eef3; --muted:#92a3b1; --line:#2a3a47;
+  --accent:#ff7a4d; --accent-ink:#1a0d07; --track:#243441; --ok:#5fd39b; --warn:#f0b35a; --tA:#15283a; --tB:#2a2519; --tC:#15301f; color-scheme:dark; }
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.45;
+  padding-block:0 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));}
+main{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.bar3w{position:sticky;top:0;z-index:20;background:var(--bg);padding:6px 0 8px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:5px}
+.bar3w .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.bar3w .u{font-family:var(--f-display);font-weight:700;font-size:26px;line-height:1.05;letter-spacing:.01em;color:var(--ink)}
+.bar3w .tb{display:flex;align-items:baseline;gap:8px;min-width:0}
+.bar3w .lbl{font:600 11px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.bar3w .num{font-family:var(--f-display);font-weight:700;font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
+.bar3w .num small{font-size:14px;color:var(--muted);margin-left:4px}
+#rowsComb .trow{grid-template-columns:minmax(0,1fr) 5rem 3.3rem;gap:3px 8px;padding:7px 0}
+#rowsComb .trow:first-child{padding-top:2px}
+#rowsComb .evname{background:none;border:0;padding:0;min-height:0;font-size:14px;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+#rowsComb .pv{font-size:30px}
+#rowsComb input{padding:8px}
+.bar3w .total{padding:8px 14px;border-radius:12px;align-items:center;flex-wrap:wrap;gap:6px 12px}
+.recap{flex:1 1 0;min-width:0;margin-left:2px;padding-left:12px;border-left:1px solid color-mix(in srgb, currentColor 25%, transparent);display:grid;grid-template-columns:minmax(0,1fr) auto 2.2ch;gap:5px 6px;align-items:baseline}
+.recap:empty{display:none}
+.rc{display:contents}
+.rc .re{font-size:13px;font-weight:600;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rc .rv i{font-style:normal;display:inline-block;width:.9em;margin-left:3px;text-align:left;font-size:12px;opacity:.65}
+.rc .rv{font-size:15px;font-weight:500;white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+.rc b{font:700 17px var(--f-body);line-height:1;text-align:right;min-width:1.6ch;font-variant-numeric:tabular-nums}
+.bar3w .total #kind{flex:1 0 100%;max-width:none;text-align:left;font-size:12px;opacity:.7;border-top:1px solid rgba(255,255,255,.18);padding-top:5px;margin-top:-1px;letter-spacing:.02em}
+.bar3 .seg button{box-shadow:inset 0 -3px 0 var(--c)}
+.bar3 .seg button[aria-pressed="true"]{background:var(--c);color:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+#sexF{--c:#d6477f}#sexM{--c:#2f6fd0}#tabTri{--c:#7a4fd1}#tabComb{--c:#d9822b}#venS{--c:#8a5a35}#venO{--c:#1f93b8}
+.bar3w .total .num{font-size:50px;line-height:.95}
+.bar3w .total .num small{font-size:20px;color:inherit}
+.bar3w .total .lbl{font-size:11px;color:inherit;opacity:.75}
+.bar3w .total .kind{font-size:13px;color:inherit;max-width:11em;text-align:right;line-height:1.25}
+.bar3w .total .kind.warn{color:var(--accent)}
+.bar3{display:grid;grid-template-columns:1fr 1.3fr;gap:6px}
+.kind{font-size:13px;color:var(--muted)}
+.kind:empty{display:none}
+.kind.warn{color:var(--warn)}
+.bar3 .seg{padding:2px;gap:2px}
+.bar3 .seg button{font-size:14px;padding:7px 2px;white-space:nowrap}
+h1{font-family:var(--f-display);font-weight:700;font-size:30px;line-height:1.05;margin:0;letter-spacing:.01em;text-wrap:balance}
+h2{font-family:var(--f-display);font-weight:700;font-size:22px;line-height:1.1;margin:6px 0 0}
+.sub{color:var(--muted);font-size:14px;margin:4px 0 0}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--track);border-radius:10px;padding:3px;gap:3px}
+.seg button{font:600 15px var(--f-body);border:0;background:transparent;color:var(--muted);padding:10px;border-radius:8px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.total{background:var(--ink);color:var(--bg);border-radius:14px;padding:16px 18px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.total .lbl{font:600 12px var(--f-body);letter-spacing:.12em;text-transform:uppercase;opacity:.75}
+.total .num{font-family:var(--f-display);font-weight:700;font-size:72px;line-height:.9;font-variant-numeric:tabular-nums}
+.total .num small{font-size:26px;opacity:.6;margin-left:4px}
+.total .kind{font-size:14px;max-width:16em;text-align:right}
+.total .kind.warn{color:var(--accent)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.card.opt{border-style:dashed}
+.tag{font:600 12px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:4px;flex:1 1 140px;min-width:0}
+.card>.field{flex:none}
+label,.lab{font:600 12px var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+select,input{font:500 16px var(--f-body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;width:100%;min-width:0}
+.sec{border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:12px}
+.sec>h2{margin:2px 2px 0}
+.secA{background:var(--tA)} .secB{background:var(--tB)} .secC{background:var(--tC)}
+.stack{display:flex;flex-direction:column;gap:14px}
+.rows{display:flex;flex-direction:column}
+.trow{display:grid;grid-template-columns:minmax(0,1fr) 5.6rem 3.6rem;gap:6px 10px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.trow:first-child{border-top:0;padding-top:4px}
+.trow .evname{font:500 16px var(--f-body);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;min-height:44px;display:flex;align-items:center;overflow-wrap:anywhere}
+.trow .pv{font-family:var(--f-display);font-weight:700;font-size:34px;line-height:1;text-align:right;font-variant-numeric:tabular-nums;display:flex;align-items:baseline;justify-content:flex-end;gap:2px;flex-wrap:wrap}
+.trow .pv small{font-size:13px;color:var(--muted);font-weight:600}
+.trow .info{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:13px;color:var(--muted)}
+.trow .info:empty{display:none}
+.chk{font:600 11px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--warn)}
+.bar{height:4px;background:var(--track);border-radius:2px;overflow:hidden;grid-column:1/-1}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .2s}
+.err{color:var(--warn);font-size:14px}
+.ok{color:var(--ok);font-size:14px}
+.go{font:600 16px var(--f-body);background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;padding:11px 18px;cursor:pointer;flex:0 0 auto;align-self:flex-end}
+.go.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.mini{font:600 12px var(--f-body);background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:4px 9px;cursor:pointer}
+.mini.danger[data-arm="1"]{background:var(--warn);color:var(--surface);border-color:var(--warn)}
+.badge{display:inline-block;font:700 12px var(--f-body);letter-spacing:.08em;background:var(--accent);color:var(--accent-ink);border-radius:5px;padding:2px 6px;vertical-align:middle}
+.res{font-family:var(--f-display);font-weight:700;font-size:34px;line-height:1.05;font-variant-numeric:tabular-nums}
+.res small{display:block;font:400 14px var(--f-body);color:var(--muted);margin-top:4px}
+.prl{font-size:13px;color:var(--muted)}
+.rec{border-top:1px solid var(--line);padding:10px 0;display:flex;flex-direction:column;gap:5px}
+.rec:first-child{border-top:0;padding-top:0}
+.rec .h{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.rec .nm{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.rec .tot{font-family:var(--f-display);font-weight:700;font-size:26px;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rec .d{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.rec .act{display:flex;gap:8px}
+.note{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+.note p{margin:0}
+.irow{display:flex;gap:8px;align-items:flex-end;flex-wrap:nowrap}
+.irow .field{flex:1 1 0;min-width:0}
+.irow .field.pts{flex:0 0 5.2rem}
+.irow .go{padding:11px 14px}
+.athrow{flex-wrap:nowrap}
+.athrow .field{flex:1 1 0;flex-direction:row;align-items:center;gap:6px}
+.athrow label{flex:0 0 auto}
+.refs{gap:8px}
+.refs h2{margin:0;font-size:19px}
+.refs a{color:#1d4ed8;text-decoration:underline;font-size:15px;line-height:1.4}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .refs a{color:#8ab4ff}}
+:root[data-theme="dark"] .refs a{color:#8ab4ff}
+.ctab{font-size:12px;color:var(--muted);margin-top:4px}
+.ctab summary{cursor:pointer}
+.ctab table{border-collapse:collapse;margin-top:6px;width:100%}
+.ctab th,.ctab td{padding:2px 6px;text-align:right;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+.ctab th:first-child,.ctab td:first-child{text-align:left;padding-left:0}
+@media (prefers-reduced-motion: reduce){.bar i{transition:none}}
+</style>
+
+</head>
+<body>
+<main>
+  <div class="bar3w">
+  <div class="top"><h1 class="u">Benjamins U14</h1></div>
+  <nav class="bar3" aria-label="Choix">
+    <div class="seg" role="group" aria-label="Catégorie">
+      <button type="button" id="sexF" aria-pressed="true" title="Benjamines">BEF</button>
+      <button type="button" id="sexM" aria-pressed="false" title="Benjamins">BEM</button>
+    </div>
+    <div class="seg" role="group" aria-label="Discipline" hidden>
+      <button type="button" id="tabTri" aria-pressed="true" title="Triathlon">Tri</button>
+      <button type="button" id="tabComb" aria-pressed="false" title="Épreuves combinées">EC</button>
+    </div>
+    <div class="seg" role="group" aria-label="Lieu">
+      <button type="button" id="venS" aria-pressed="false" title="Salle (hivernal)">Salle</button>
+      <button type="button" id="venO" aria-pressed="true" title="Plein air (estival)">Plein air</button>
+    </div>
+  </nav>
+  <div class="total" aria-live="polite">
+    <div><div class="lbl"><span id="tlbl">Total</span><span id="clabel" hidden></span></div><div class="num"><span id="total">0</span><span id="ctotal" hidden>0</span><small>pts</small></div></div>
+    <div class="recap" id="recap"></div><div class="kind" id="ckind" hidden></div>
+    <div class="kind" id="kind"></div>
+  </div>
+  </div>
+
+  <div id="viewTri" class="stack">
+    <section class="sec secA">
+      <h2>Mon triathlon</h2>
+      <div class="card"><div class="rows" id="rowsMain"></div></div>
+    </section>
+    <section class="sec secB">
+      <h2>Épreuve facultative</h2>
+      <div class="card opt"><div class="tag">Hors total du triathlon</div><div class="rows" id="rowsOpt"></div></div>
+    </section>
+    <section class="sec secC">
+      <h2>Performance pour un nombre de points</h2>
+      <div class="card" id="inv"></div>
+    </section>
+    <section class="card refs"><h2>Tables officielles FFA 2025–2028</h2><a id="tabF" href="https://www.athle.fr/asp.net/main.pdf/pdf.aspx?path=/pdf/docffa/pointjeunes_bef.pdf" target="_blank" rel="noopener noreferrer">Ouvrir le barème officiel Benjamines (BEF)</a><a id="tabM" href="https://www.athle.fr/asp.net/main.pdf/pdf.aspx?path=/pdf/docffa/pointjeunes_bem.pdf" target="_blank" rel="noopener noreferrer">Ouvrir le barème officiel Benjamins (BEM)</a></section>
+  </div>
+
+  <div id="viewComb" class="stack" hidden>
+    <section class="sec secA">
+      <div class="card"><div class="rows" id="rowsComb"></div></div>
+    </section>
+    <section class="sec secC">
+      <h2>Performance pour un nombre de points</h2>
+      <div class="card" id="cinv"></div>
+    </section>
+    <details class="ctab" id="ctab"></details>
+  </div>
+
+  <div hidden>
+  <section class="sec">
+    <h2>Enregistrer ce résultat</h2>
+    <section class="card" id="athCard">
+    <div class="row athrow">
+      <div class="field"><label for="svPrenom">Prénom</label><input id="svPrenom" type="text" autocomplete="given-name"></div>
+      <div class="field"><label for="svNom">Nom</label><input id="svNom" type="text" autocomplete="family-name"></div>
+    </div>
+  </section>
+    <div class="card" id="svCard">
+      <div class="field"><label for="svLieu">Lieu de la performance</label><input id="svLieu" type="text" autocomplete="off" placeholder="Stade, ville"></div>
+      <div class="row">
+        <div class="field"><label for="svDate">Date</label><input id="svDate" type="date"></div>
+        <button type="button" class="go" id="svSave">Enregistrer</button>
+      </div>
+      <div class="err" id="svMsg" aria-live="polite"></div>
+    </div>
+    <h2>Résultats enregistrés <span class="sub" id="svCount"></span></h2>
+    <div class="card">
+      <div class="row">
+        <div class="field"><label for="svSearch">Rechercher un nom</label><input id="svSearch" type="search" autocomplete="off"></div>
+        <button type="button" class="go ghost" id="svExport" hidden>Exporter en CSV</button>
+      </div>
+      <div id="svList"></div>
+    </div>
+  </section>
+
+  </div>
+</main>
+
+<script>
+const T = {"F":{"50m":{"kind":"run","elec":[[50,6.48],[49,6.56],[48,6.64],[47,6.72],[46,6.8],[45,6.89],[44,6.97],[43,7.05],[42,7.13],[41,7.21],[40,7.29],[39,7.37],[38,7.45],[37,7.53],[36,7.61],[35,7.69],[34,7.77],[33,7.85],[32,7.93],[31,8.01],[30,8.1],[29,8.12],[28,8.15],[27,8.17],[26,8.2],[25,8.22],[24,8.25],[23,8.27],[22,8.3],[21,8.32],[20,8.35],[19,8.4],[18,8.45],[17,8.5],[16,8.55],[15,8.61],[14,8.84],[13,9.07],[12,9.31],[11,9.54],[10,9.77],[9,10.01],[8,10.24],[7,10.47],[6,10.71],[5,10.94],[4,11.17],[3,11.41],[2,11.64],[1,11.88]]},"1000m":{"kind":"time","elec":[[50,179.24],[49,181.07],[48,182.9],[47,184.72],[46,186.55],[45,188.38],[44,191.07],[43,193.77],[42,196.46],[41,199.15],[40,201.85],[39,204.54],[38,207.23],[37,209.93],[36,212.62],[35,215.31],[34,218.01],[33,220.7],[32,223.39],[31,226.09],[30,228.78],[29,229.7],[28,230.62],[27,231.54],[26,232.46],[25,233.38],[24,234.3],[23,235.22],[22,236.14],[21,237.06],[20,237.98],[19,240.0],[18,242.03],[17,244.05],[16,246.08],[15,248.1],[14,255.0],[13,261.91],[12,268.81],[11,275.71],[10,282.62],[9,289.52],[8,296.43],[7,303.33],[6,310.23],[5,317.14],[4,324.04],[3,330.94],[2,337.85],[1,344.75]]},"50m haies":{"kind":"run","elec":[[50,7.55],[49,7.62],[48,7.69],[47,7.77],[46,7.84],[45,7.92],[44,8.05],[43,8.19],[42,8.33],[41,8.47],[40,8.61],[39,8.74],[38,8.88],[37,9.02],[36,9.16],[35,9.3],[34,9.43],[33,9.57],[32,9.71],[31,9.85],[30,9.99],[29,10.04],[28,10.1],[27,10.15],[26,10.21],[25,10.26],[24,10.32],[23,10.37],[22,10.43],[21,10.48],[20,10.54],[19,10.64],[18,10.74],[17,10.84],[16,10.94],[15,11.05],[14,11.54],[13,12.04],[12,12.53],[11,13.03],[10,13.52],[9,14.02],[8,14.51],[7,15.01],[6,15.5],[5,16.0],[4,16.49],[3,16.99],[2,17.48],[1,17.98]]},"2000m marche":{"kind":"time","elec":[[50,587.9],[49,607.77],[48,627.64],[47,647.51],[46,667.38],[45,687.25],[44,695.36],[43,703.47],[42,711.57],[41,719.68],[40,727.79],[39,735.9],[38,744.01],[37,752.11],[36,760.22],[35,768.33],[34,776.44],[33,784.55],[32,792.65],[31,800.76],[30,808.87],[29,812.44],[28,816.0],[27,819.57],[26,823.14],[25,826.71],[24,830.27],[23,833.84],[22,837.41],[21,840.97],[20,844.54],[19,851.49],[18,858.45],[17,865.4],[16,872.36],[15,879.31],[14,892.11],[13,904.91],[12,917.71],[11,930.52],[10,943.32],[9,956.12],[8,968.92],[7,981.72],[6,994.52],[5,1007.32],[4,1020.13],[3,1032.93],[2,1045.73],[1,1058.53]]},"Hauteur":{"kind":"field","elec":[[50,1.73],[49,1.69],[48,1.65],[47,1.61],[46,1.57],[45,1.53],[44,1.5],[43,1.48],[42,1.46],[41,1.44],[40,1.42],[39,1.39],[38,1.37],[37,1.35],[36,1.33],[35,1.31],[34,1.28],[33,1.26],[32,1.24],[31,1.22],[30,1.2],[29,1.19],[27,1.18],[25,1.17],[23,1.16],[21,1.15],[19,1.14],[18,1.13],[17,1.12],[16,1.11],[15,1.1],[14,1.08],[13,1.06],[12,1.04],[11,1.03],[10,1.01],[9,0.99],[8,0.98],[7,0.96],[6,0.94],[5,0.92],[4,0.91],[3,0.89],[2,0.87],[1,0.86]]},"Perche":{"kind":"field","elec":[[50,3.3],[49,3.2],[48,3.1],[47,3.0],[46,2.9],[45,2.81],[44,2.75],[43,2.7],[42,2.64],[41,2.59],[40,2.54],[39,2.48],[38,2.43],[37,2.37],[36,2.32],[35,2.27],[34,2.21],[33,2.16],[32,2.1],[31,2.05],[30,2.0],[29,1.98],[28,1.96],[27,1.94],[26,1.92],[25,1.9],[24,1.88],[23,1.86],[22,1.84],[21,1.82],[20,1.8],[19,1.77],[18,1.74],[17,1.71],[16,1.68],[15,1.65],[14,1.61],[13,1.58],[12,1.55],[11,1.52],[10,1.49],[9,1.46],[8,1.43],[7,1.39],[6,1.36],[5,1.33],[4,1.3],[3,1.27],[2,1.24],[1,1.21]]},"Longueur":{"kind":"field","elec":[[50,5.67],[49,5.54],[48,5.42],[47,5.3],[46,5.18],[45,5.06],[44,4.96],[43,4.86],[42,4.76],[41,4.66],[40,4.56],[39,4.46],[38,4.36],[37,4.26],[36,4.16],[35,4.06],[34,3.96],[33,3.86],[32,3.76],[31,3.66],[30,3.57],[29,3.54],[28,3.52],[27,3.5],[26,3.47],[25,3.45],[24,3.43],[23,3.4],[22,3.38],[21,3.36],[20,3.34],[19,3.29],[18,3.24],[17,3.2],[16,3.15],[15,3.11],[14,2.99],[13,2.88],[12,2.76],[11,2.65],[10,2.53],[9,2.42],[8,2.3],[7,2.19],[6,2.07],[5,1.96],[4,1.84],[3,1.73],[2,1.61],[1,1.5]]},"Triple saut":{"kind":"field","elec":[[50,11.71],[49,11.52],[48,11.33],[47,11.14],[46,10.95],[45,10.76],[44,10.59],[43,10.42],[42,10.25],[41,10.08],[40,9.92],[39,9.75],[38,9.58],[37,9.41],[36,9.24],[35,9.08],[34,8.91],[33,8.74],[32,8.57],[31,8.4],[30,8.24],[29,8.19],[28,8.14],[27,8.09],[26,8.04],[25,7.99],[24,7.94],[23,7.89],[22,7.84],[21,7.79],[20,7.75],[19,7.65],[18,7.55],[17,7.45],[16,7.35],[15,7.25],[14,7.09],[13,6.94],[12,6.78],[11,6.63],[10,6.47],[9,6.32],[8,6.17],[7,6.01],[6,5.86],[5,5.7],[4,5.55],[3,5.39],[2,5.24],[1,5.09]]},"Poids":{"kind":"field","elec":[[50,15.5],[49,14.84],[48,14.19],[47,13.53],[46,12.88],[45,12.23],[44,11.84],[43,11.46],[42,11.07],[41,10.69],[40,10.3],[39,9.92],[38,9.53],[37,9.15],[36,8.76],[35,8.38],[34,7.99],[33,7.61],[32,7.22],[31,6.84],[30,6.46],[29,6.4],[28,6.34],[27,6.28],[26,6.22],[25,6.16],[24,6.1],[23,6.04],[22,5.98],[21,5.92],[20,5.87],[19,5.76],[18,5.65],[17,5.54],[16,5.43],[15,5.32],[14,5.12],[13,4.92],[12,4.73],[11,4.53],[10,4.34],[9,4.14],[8,3.95],[7,3.75],[6,3.55],[5,3.36],[4,3.16],[3,2.97],[2,2.77],[1,2.58]]},"Disque":{"kind":"field","elec":[[50,45.59],[49,42.84],[48,40.09],[47,37.34],[46,34.59],[45,31.84],[44,30.77],[43,29.7],[42,28.64],[41,27.57],[40,26.51],[39,25.44],[38,24.38],[37,23.31],[36,22.25],[35,21.18],[34,20.12],[33,19.05],[32,17.99],[31,16.92],[30,15.86],[29,15.66],[28,15.46],[27,15.27],[26,15.07],[25,14.88],[24,14.68],[23,14.48],[22,14.29],[21,14.09],[20,13.9],[19,13.57],[18,13.25],[17,12.92],[16,12.6],[15,12.28],[14,11.82],[13,11.37],[12,10.91],[11,10.46],[10,10.0],[9,9.55],[8,9.1],[7,8.64],[6,8.19],[5,7.73],[4,7.28],[3,6.82],[2,6.37],[1,5.92]]},"Marteau":{"kind":"field","elec":[[50,59.42],[49,56.58],[48,53.74],[47,50.9],[46,48.06],[45,45.22],[44,43.62],[43,42.02],[42,40.42],[41,38.82],[40,37.23],[39,35.63],[38,34.03],[37,32.43],[36,30.83],[35,29.24],[34,27.64],[33,26.04],[32,24.44],[31,22.84],[30,21.25],[29,20.95],[28,20.66],[27,20.37],[26,20.08],[25,19.79],[24,19.49],[23,19.2],[22,18.91],[21,18.62],[20,18.33],[19,17.86],[18,17.39],[17,16.93],[16,16.46],[15,16.0],[14,15.42],[13,14.85],[12,14.28],[11,13.71],[10,13.13],[9,12.56],[8,11.99],[7,11.42],[6,10.85],[5,10.27],[4,9.7],[3,9.13],[2,8.56],[1,7.99]]},"Javelot":{"kind":"field","elec":[[50,46.68],[49,43.63],[48,40.59],[47,37.55],[46,34.51],[45,31.47],[44,30.26],[43,29.06],[42,27.86],[41,26.65],[40,25.45],[39,24.25],[38,23.05],[37,21.84],[36,20.64],[35,19.44],[34,18.24],[33,17.03],[32,15.83],[31,14.63],[30,13.43],[29,13.23],[28,13.04],[27,12.85],[26,12.65],[25,12.46],[24,12.27],[23,12.07],[22,11.88],[21,11.69],[20,11.5],[19,11.18],[18,10.86],[17,10.54],[16,10.22],[15,9.91],[14,9.5],[13,9.1],[12,8.7],[11,8.3],[10,7.9],[9,7.5],[8,7.1],[7,6.69],[6,6.29],[5,5.89],[4,5.49],[3,5.09],[2,4.69],[1,4.29]]}},"M":{"50m":{"kind":"run","elec":[[50,6.32],[49,6.36],[48,6.41],[47,6.45],[46,6.5],[45,6.55],[44,6.64],[43,6.73],[42,6.82],[41,6.91],[40,7.0],[39,7.09],[38,7.18],[37,7.28],[36,7.37],[35,7.46],[34,7.55],[33,7.64],[32,7.73],[31,7.82],[30,7.92],[29,7.94],[28,7.97],[27,7.99],[26,8.02],[25,8.05],[24,8.07],[23,8.1],[22,8.12],[21,8.15],[20,8.18],[19,8.23],[18,8.28],[17,8.33],[16,8.38],[15,8.44],[14,8.67],[13,8.9],[12,9.13],[11,9.36],[10,9.59],[9,9.82],[8,10.05],[7,10.28],[6,10.51],[5,10.74],[4,10.97],[3,11.2],[2,11.43],[1,11.66]]},"1000m":{"kind":"time","elec":[[50,160.95],[49,163.68],[48,166.42],[47,169.16],[46,171.89],[45,174.63],[44,177.15],[43,179.66],[42,182.18],[41,184.7],[40,187.21],[39,189.73],[38,192.25],[37,194.76],[36,197.28],[35,199.8],[34,202.31],[33,204.83],[32,207.35],[31,209.86],[30,212.38],[29,213.26],[28,214.14],[27,215.03],[26,215.91],[25,216.79],[24,217.67],[23,218.55],[22,219.44],[21,220.32],[20,221.2],[19,223.07],[18,224.93],[17,226.8],[16,228.66],[15,230.53],[14,238.03],[13,245.54],[12,253.04],[11,260.54],[10,268.04],[9,275.55],[8,283.05],[7,290.55],[6,298.06],[5,305.56],[4,313.06],[3,320.56],[2,328.07],[1,335.57]]},"50m haies":{"kind":"run","elec":[[50,7.14],[49,7.23],[48,7.32],[47,7.41],[46,7.5],[45,7.59],[44,7.72],[43,7.85],[42,7.99],[41,8.12],[40,8.26],[39,8.39],[38,8.53],[37,8.66],[36,8.8],[35,8.93],[34,9.07],[33,9.2],[32,9.34],[31,9.47],[30,9.61],[29,9.66],[28,9.71],[27,9.76],[26,9.81],[25,9.87],[24,9.92],[23,9.97],[22,10.02],[21,10.07],[20,10.13],[19,10.23],[18,10.33],[17,10.43],[16,10.53],[15,10.63],[14,11.05],[13,11.48],[12,11.91],[11,12.34],[10,12.77],[9,13.2],[8,13.63],[7,14.05],[6,14.48],[5,14.91],[4,15.34],[3,15.77],[2,16.2],[1,16.63]]},"2000m marche":{"kind":"time","elec":[[50,577.8],[49,599.24],[48,620.69],[47,642.14],[46,663.58],[45,685.03],[44,692.37],[43,699.71],[42,707.04],[41,714.38],[40,721.72],[39,729.06],[38,736.4],[37,743.73],[36,751.07],[35,758.41],[34,765.75],[33,773.09],[32,780.42],[31,787.76],[30,795.1],[29,798.74],[28,802.39],[27,806.03],[26,809.68],[25,813.32],[24,816.96],[23,820.61],[22,824.25],[21,827.9],[20,831.54],[19,837.56],[18,843.57],[17,849.59],[16,855.6],[15,861.62],[14,873.48],[13,885.33],[12,897.19],[11,909.04],[10,920.9],[9,932.75],[8,944.61],[7,956.47],[6,968.32],[5,980.18],[4,992.03],[3,1003.89],[2,1015.74],[1,1027.6]]},"Hauteur":{"kind":"field","elec":[[50,1.85],[49,1.8],[48,1.76],[47,1.71],[46,1.67],[45,1.63],[44,1.6],[43,1.57],[42,1.55],[41,1.52],[40,1.5],[39,1.47],[38,1.45],[37,1.42],[36,1.4],[35,1.37],[34,1.35],[33,1.32],[32,1.3],[31,1.27],[30,1.25],[29,1.24],[27,1.23],[25,1.22],[23,1.21],[21,1.2],[19,1.18],[18,1.17],[17,1.16],[16,1.15],[15,1.14],[14,1.11],[13,1.09],[12,1.07],[11,1.05],[10,1.03],[9,1.01],[8,0.99],[7,0.97],[6,0.95],[5,0.93],[4,0.91],[3,0.89],[2,0.87],[1,0.85]]},"Perche":{"kind":"field","elec":[[50,4.3],[49,4.06],[48,3.82],[47,3.58],[46,3.34],[45,3.11],[44,3.04],[43,2.97],[42,2.9],[41,2.83],[40,2.77],[39,2.7],[38,2.63],[37,2.56],[36,2.49],[35,2.43],[34,2.36],[33,2.29],[32,2.22],[31,2.15],[30,2.09],[29,2.06],[28,2.04],[27,2.02],[26,2.0],[25,1.98],[24,1.95],[23,1.93],[22,1.91],[21,1.89],[20,1.87],[19,1.84],[18,1.82],[17,1.79],[16,1.77],[15,1.75],[14,1.71],[13,1.67],[12,1.63],[11,1.59],[10,1.55],[9,1.51],[8,1.47],[7,1.43],[6,1.39],[5,1.35],[4,1.31],[3,1.27],[2,1.23],[1,1.2]]},"Longueur":{"kind":"field","elec":[[50,6.53],[49,6.33],[48,6.13],[47,5.93],[46,5.73],[45,5.53],[44,5.41],[43,5.29],[42,5.18],[41,5.06],[40,4.95],[39,4.83],[38,4.72],[37,4.6],[36,4.49],[35,4.37],[34,4.26],[33,4.14],[32,4.03],[31,3.91],[30,3.8],[29,3.77],[28,3.75],[27,3.72],[26,3.7],[25,3.68],[24,3.65],[23,3.63],[22,3.6],[21,3.58],[20,3.56],[19,3.51],[18,3.46],[17,3.41],[16,3.36],[15,3.32],[14,3.2],[13,3.08],[12,2.96],[11,2.84],[10,2.72],[9,2.6],[8,2.48],[7,2.36],[6,2.24],[5,2.12],[4,2.0],[3,1.88],[2,1.76],[1,1.65]]},"Triple saut":{"kind":"field","elec":[[50,13.71],[49,13.22],[48,12.73],[47,12.24],[46,11.75],[45,11.26],[44,11.08],[43,10.91],[42,10.74],[41,10.57],[40,10.4],[39,10.22],[38,10.05],[37,9.88],[36,9.71],[35,9.54],[34,9.36],[33,9.19],[32,9.02],[31,8.85],[30,8.68],[29,8.63],[28,8.58],[27,8.53],[26,8.49],[25,8.44],[24,8.39],[23,8.35],[22,8.3],[21,8.25],[20,8.21],[19,8.11],[18,8.02],[17,7.93],[16,7.84],[15,7.75],[14,7.58],[13,7.42],[12,7.25],[11,7.09],[10,6.92],[9,6.76],[8,6.59],[7,6.43],[6,6.26],[5,6.1],[4,5.93],[3,5.77],[2,5.6],[1,5.44]]},"Poids":{"kind":"field","elec":[[50,16.9],[49,16.02],[48,15.15],[47,14.27],[46,13.4],[45,12.53],[44,12.12],[43,11.72],[42,11.32],[41,10.91],[40,10.51],[39,10.11],[38,9.7],[37,9.3],[36,8.9],[35,8.49],[34,8.09],[33,7.69],[32,7.28],[31,6.88],[30,6.48],[29,6.41],[28,6.35],[27,6.29],[26,6.22],[25,6.16],[24,6.1],[23,6.03],[22,5.97],[21,5.91],[20,5.85],[19,5.74],[18,5.63],[17,5.52],[16,5.41],[15,5.31],[14,5.12],[13,4.94],[12,4.76],[11,4.58],[10,4.4],[9,4.22],[8,4.04],[7,3.85],[6,3.67],[5,3.49],[4,3.31],[3,3.13],[2,2.95],[1,2.77]]},"Disque":{"kind":"field","elec":[[50,46.88],[49,44.24],[48,41.6],[47,38.96],[46,36.32],[45,33.68],[44,32.49],[43,31.31],[42,30.12],[41,28.94],[40,27.75],[39,26.57],[38,25.38],[37,24.2],[36,23.01],[35,21.83],[34,20.64],[33,19.46],[32,18.27],[31,17.09],[30,15.91],[29,15.71],[28,15.51],[27,15.31],[26,15.11],[25,14.91],[24,14.71],[23,14.51],[22,14.31],[21,14.11],[20,13.92],[19,13.58],[18,13.24],[17,12.91],[16,12.57],[15,12.24],[14,11.8],[13,11.36],[12,10.92],[11,10.48],[10,10.05],[9,9.61],[8,9.17],[7,8.73],[6,8.29],[5,7.86],[4,7.42],[3,6.98],[2,6.54],[1,6.11]]},"Marteau":{"kind":"field","elec":[[50,60.82],[49,55.5],[48,50.19],[47,44.87],[46,39.56],[45,34.25],[44,33.11],[43,31.97],[42,30.84],[41,29.7],[40,28.57],[39,27.43],[38,26.3],[37,25.16],[36,24.03],[35,22.89],[34,21.76],[33,20.62],[32,19.49],[31,18.35],[30,17.22],[29,16.94],[28,16.66],[27,16.38],[26,16.1],[25,15.82],[24,15.54],[23,15.26],[22,14.98],[21,14.7],[20,14.43],[19,14.02],[18,13.61],[17,13.21],[16,12.8],[15,12.4],[14,11.97],[13,11.55],[12,11.13],[11,10.7],[10,10.28],[9,9.86],[8,9.44],[7,9.01],[6,8.59],[5,8.17],[4,7.74],[3,7.32],[2,6.9],[1,6.48]]},"Javelot":{"kind":"field","elec":[[50,55.46],[49,52.03],[48,48.61],[47,45.19],[46,41.77],[45,38.35],[44,36.98],[43,35.62],[42,34.26],[41,32.9],[40,31.54],[39,30.18],[38,28.82],[37,27.45],[36,26.09],[35,24.73],[34,23.37],[33,22.01],[32,20.65],[31,19.29],[30,17.93],[29,17.68],[28,17.44],[27,17.2],[26,16.96],[25,16.72],[24,16.48],[23,16.24],[22,16.0],[21,15.76],[20,15.52],[19,15.08],[18,14.64],[17,14.2],[16,13.76],[15,13.33],[14,12.7],[13,12.07],[12,11.44],[11,10.81],[10,10.18],[9,9.55],[8,8.92],[7,8.29],[6,7.66],[5,7.03],[4,6.4],[3,5.77],[2,5.14],[1,4.52]]}}};
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const GROUPS = [
+  ['Courses', ['50m','1000m','2000m marche'], 'course'],
+  ['Haies', ['50m haies'], 'course'],
+  ['Sauts', ['Hauteur','Perche','Longueur','Triple saut'], 'saut'],
+  ['Lancers', ['Poids','Disque','Marteau','Javelot'], 'lancer']
+];
+const INDOOR = ['50m','50m haies','1000m','2000m marche','Hauteur','Perche','Longueur','Triple saut','Poids'];
+const CAT = {};
+GROUPS.forEach(([g, list, c]) => list.forEach(n => CAT[n] = c));
+const HURDLE = {M:{}, F:{}};
+const ENGIN = {M:{}, F:{}};
+
+let sex = 'F', venue = 'O', mode = 'tri', cm = 'salle';
+let records = [];
+const state = {
+  F:[{ev:'50m haies',val:'9,50',timing:'elec'},{ev:'Longueur',val:'3,80',timing:'elec'},{ev:'Poids',val:'7,00',timing:'elec'},{ev:'Hauteur',val:'1,25',timing:'elec'}],
+  M:[{ev:'50m',val:'8,00',timing:'elec'},{ev:'Longueur',val:'4,20',timing:'elec'},{ev:'Javelot',val:'25,00',timing:'elec'},{ev:'Hauteur',val:'1,30',timing:'elec'}]
+};
+const inv = {F:{ev:'Longueur',pts:'35',timing:'elec'}, M:{ev:'Longueur',pts:'35',timing:'elec'}};
+
+const avail = n => !!T[sex][n] && (venue === 'O' || INDOOR.includes(n));
+const nf = (x, d) => x.toFixed(d).replace('.', ',');
+function fmtTime(s){ const m = Math.floor(s/60); const r = s - m*60; return m + ':' + (r < 10 ? '0' : '') + r.toFixed(2); }
+function fmtVal(kind, v, manual){
+  if (kind === 'time') return fmtTime(v);
+  if (kind === 'run') return nf(v, manual ? 1 : 2) + ' s';
+  return nf(v, 2) + ' m';
+}
+function label(ev){
+  let t = ev;
+  if (HURDLE[sex][ev]) t += ' (' + HURDLE[sex][ev] + ')';
+  if (ENGIN[sex][ev]) t += ' (' + ENGIN[sex][ev] + ')';
+  return t;
+}
+function slotOk(i, n){
+  if (i >= 3) return true;
+  const c = CAT[n];
+  if (venue === 'O') return c === ['course', 'saut', 'lancer'][i];
+  const e0 = state[sex][0].ev, e1 = state[sex][1].ev;
+  if (i === 0) return c === 'course';
+  if (e0 === '1000m' || e0 === '2000m marche') return c === (i === 1 ? 'saut' : 'lancer');      // 1000 m : un saut et un lancer
+  if (i === 1) return c === 'saut' || ((n === '50m' || n === '50m haies') && n !== e0);   // 50 m / 50 m haies : l'autre course possible
+  return CAT[e1] === 'saut' ? c === 'lancer' : (c === 'saut' || c === 'lancer');
+}
+function optionsHtml(sel, i){
+  return GROUPS.map(([g, list]) => {
+    const l = list.filter(n => avail(n) && (i === undefined || slotOk(i, n)));
+    return l.length ? '<optgroup label="' + g + '">' + l.map(n => '<option value="' + n + '"' + (n === sel ? ' selected' : '') + '>' + label(n) + '</option>').join('') + '</optgroup>' : '';
+  }).join('');
+}
+function fallbackEv(ev){
+  const same = GROUPS.filter(g => g[2] === CAT[ev]).flatMap(g => g[1]).find(avail);
+  return same || GROUPS.flatMap(g => g[1]).find(avail);
+}
+function parsePerf(str, kind){
+  let s = String(str).trim().replace(/,/g, '.').replace(/[′’']/g, ':').replace(/[″”"]/g, '.');
+  if (!s) return null;
+  if (kind === 'time'){
+    if (!s.includes(':') && (s.match(/\./g) || []).length === 2) s = s.replace('.', ':');
+    if (s.includes(':')){
+      const p = s.split(':'); const m = parseFloat(p[0]); const sec = parseFloat(p[1] || '0');
+      if (isNaN(m) || isNaN(sec) || sec >= 60) return NaN;
+      return m*60 + sec;
+    }
+    const n = parseFloat(s); return (isNaN(n) || n < 60) ? NaN : n;
+  }
+  const n = parseFloat(s); return (isNaN(n) || n <= 0) ? NaN : n;
+}
+function tableFor(ev, timing){
+  const e = T[sex][ev];
+  return {list: e.elec, kind: e.kind, manual:false};
+}
+function score(tb, perf){
+  const better = tb.kind === 'field' ? (v => perf >= v - 1e-9) : (v => perf <= v + 1e-9);
+  for (const [p, v] of tb.list) if (better(v)) return p;
+  return 0;
+}
+function nextStep(tb, pts){
+  if (pts >= 50) return null;
+  let found = null;
+  for (const [p, v] of tb.list) if (p > pts) found = [p, v];
+  return found;
+}
+function needFor(tb, target){
+  let found = null;
+  for (const [p, v] of tb.list) if (p >= target) found = [p, v];
+  return found;
+}
+
+/* ---------- Records personnels ---------- */
+const normName = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+function athleteKey(){
+  const p = normName($('svPrenom').value), n = normName($('svNom').value);
+  return p && n ? p + '|' + n : '';
+}
+function bestFor(ev, chrono, kind){
+  const key = athleteKey(); if (!key) return null;
+  let best = null;
+  records.forEach(r => {
+    if (normName(r.prenom) + '|' + normName(r.nom) !== key) return;
+    (r.epreuves || []).forEach(x => {
+      if (x.ev !== ev || (x.chrono || null) !== chrono) return;
+      const v = parsePerf(x.perf, kind);
+      if (v === null || isNaN(v)) return;
+      if (!best || (kind === 'field' ? v > best.val : v < best.val)) best = {val:v};
+    });
+  });
+  return best;
+}
+const beats = (kind, perf, best) => kind === 'field' ? perf > best.val + 1e-9 : perf < best.val - 1e-9;
+
+/* ---------- Ligne d'épreuve : épreuve, performance, points ---------- */
+function rowMarkup(p, evHtml, val, maxLabel, hint){
+  return '<div class="trow">' + evHtml +
+    '<input id="' + p + 'val" type="text" inputmode="decimal" autocomplete="off" aria-label="Performance" placeholder="' + hint + '" value="' + esc(val) + '">' +
+    '<div class="pv"><span id="' + p + 'p">0</span>' + '' + '</div>' +
+    '<div class="bar"><i id="' + p + 'b"></i></div>' +
+    '<div class="info"><button type="button" class="mini" id="' + p + 'tm" hidden></button><span id="' + p + 'pb" class="badge" hidden>PR</span><span id="' + p + 'chk" class="chk" hidden>constantes à vérifier</span><span id="' + p + 'in"></span></div>' +
+    '<div class="err" id="' + p + 'er" hidden style="grid-column:1/-1"></div></div>';
+}
+function hintFor(kind){ return kind === 'time' ? '3:20.00' : kind === 'run' ? '8,20' : '1,55'; }
+function setBar(p, pts, max){ $(p + 'b').style.width = Math.min(100, pts / max * 100) + '%'; }
+function recordText(kind, best, chrono){
+  return best ? 'Record enregistré : ' + fmtVal(kind, best.val, chrono === 'man') + (chrono === 'man' ? ' (manuel)' : '') : 'Aucun record enregistré';
+}
+
+/* ---------- Triathlon ---------- */
+function buildSlots(){
+  const bm = $('rowsMain'), bo = $('rowsOpt'); bm.innerHTML = ''; bo.innerHTML = '';
+  state[sex].forEach((s, i) => {
+    if (!avail(s.ev) || !slotOk(i, s.ev)) { s.ev = GROUPS.flatMap(g => g[1]).find(n => avail(n) && slotOk(i, n)); s.val = ''; }
+    const e = T[sex][s.ev];
+    const p = 't' + i;
+    const evHtml = '<select id="' + p + 'ev" aria-label="Épreuve ' + (i < 3 ? i + 1 : 'facultative') + '">' + optionsHtml(s.ev, i) + '</select>';
+    const holder = document.createElement('div');
+    holder.innerHTML = rowMarkup(p, evHtml, s.val, '50', hintFor(e.kind));
+    (i === 3 ? bo : bm).appendChild(holder.firstChild);
+    $(p + 'ev').addEventListener('change', ev => { s.ev = ev.target.value; if (venue === 'S' && i < 2) buildSlots(); else update(); });
+    $(p + 'val').addEventListener('input', ev => { s.val = ev.target.value; update(); });
+    $(p + 'tm').addEventListener('click', () => { s.timing = s.timing === 'man' ? 'elec' : 'man'; update(); });
+  });
+  update();
+  buildInv();
+}
+function update(){
+  let total = 0; const cats = []; const evs = []; const recap = [];
+  state[sex].forEach((s, i) => {
+    const p = 't' + i;
+    const e = T[sex][s.ev]; const tb = tableFor(s.ev, s.timing);
+    const run = e.kind === 'run';
+    $(p + 'tm').hidden = true;
+    $(p + 'val').placeholder = hintFor(e.kind);
+    const perf = parsePerf(s.val, e.kind);
+    const bad = perf === null || isNaN(perf);
+    const er = $(p + 'er');
+    let pts = 0;
+    if (i < 3){ cats.push(CAT[s.ev]); evs.push(s.ev); }
+    if (bad){
+      er.hidden = !(s.val || '').trim() ? true : false;
+      er.textContent = e.kind === 'time' ? 'Saisissez un temps au format 2:35.40.' : 'Saisissez une performance, par exemple ' + (run ? '11,50.' : '4,50.');
+      if (!(s.val || '').trim()) { er.hidden = false; }
+    } else { er.hidden = true; pts = score(tb, perf); }
+    if (i < 3){ total += pts; recap.push('<div class="rc"><span class="re">' + esc(label(s.ev).replace(/\s*\(.*?\)/g, '').replace('2000m marche', 'Marche')) + '</span><span class="rv">' + esc((s.val || '').trim() || '–') + '<i>' + (((s.val || '').trim() && e.kind !== 'time') ? (e.kind === 'run' ? 's' : 'm') : '') + '</i></span><b>' + pts + '</b></div>'); }
+    $(p + 'p').textContent = pts; setBar(p, pts, 50);
+    const chrono = run ? 'elec' : null;
+    const pb = $(p + 'pb'); pb.hidden = true;
+    const parts = [];
+    if (athleteKey()){
+      const best = bestFor(s.ev, chrono, e.kind);
+      parts.push(recordText(e.kind, best, chrono));
+      if (best && !bad) pb.hidden = !beats(e.kind, perf, best);
+    }
+    if (!bad){ const nx = nextStep(tb, pts); parts.push(nx ? 'Palier suivant : ' + nx[0] + ' pts à ' + fmtVal(tb.kind, nx[1], tb.manual) : 'Maximum atteint'); }
+    $(p + 'in').textContent = parts.join(' · ');
+  });
+  $('total').textContent = total;
+  $('recap').innerHTML = recap.join('');
+  const k = $('kind');
+  const c = cats.slice().sort().join('+');
+  const dup = new Set(evs).size < evs.length;
+  let txt = '', warn = false;
+  const salleDouble = venue === 'S' && evs.includes('50m') && evs.includes('50m haies') && (c === 'course+course+saut' || c === 'course+course+lancer');
+  if (c === 'course+lancer+saut') txt = venue === 'S' ? 'Triathlon salle' : 'Triathlon plein air';
+  else if (salleDouble) txt = 'Triathlon salle : 50 m, 50 m haies et un ' + (c === 'course+course+saut' ? 'saut' : 'lancer');
+  else { txt = venue === 'S' ? 'Combinaison à vérifier : une course, un saut, un lancer, ou 50 m + 50 m haies + un saut ou un lancer.' : 'Combinaison à vérifier : une course (haies comprises), un saut et un lancer.'; warn = true; }
+  if (dup) { txt = 'Une même épreuve est choisie deux fois.'; warn = true; }
+  k.textContent = txt; k.className = 'kind' + (warn ? ' warn' : '');
+}
+function buildInv(){
+  const st = inv[sex];
+  if (!avail(st.ev)) st.ev = fallbackEv(st.ev);
+  $('inv').innerHTML =
+    '<div class="irow"><div class="field"><label for="invEv">Épreuve</label><select id="invEv">' + optionsHtml(st.ev) + '</select></div>' +
+    '<div class="field pts"><label for="invPts">Points</label><input id="invPts" type="text" inputmode="numeric" autocomplete="off" value="' + st.pts + '"></div>' +
+    '<button type="button" class="go" id="invGo">OK</button></div><div id="invRes" aria-live="polite"></div>';
+  $('invEv').addEventListener('change', e => { st.ev = e.target.value; calcInv(); });
+  $('invPts').addEventListener('input', e => { st.pts = e.target.value; });
+  $('invPts').addEventListener('keydown', e => { if (e.key === 'Enter') calcInv(); });
+  $('invGo').addEventListener('click', calcInv);
+  calcInv();
+}
+function calcInv(){
+  const st = inv[sex]; const out = $('invRes');
+  const n = parseInt(String(st.pts).trim(), 10);
+  if (isNaN(n) || n < 1 || n > 50){ out.innerHTML = '<div class="err">Saisissez un nombre de points entre 1 et 50.</div>'; return; }
+  const tb = tableFor(st.ev, st.timing);
+  const r = needFor(tb, n);
+  const cmp = tb.kind === 'field' ? 'Au moins ' : 'En ';
+  const cmp2 = tb.kind === 'field' ? '' : ' ou moins';
+  const extra = r[0] !== n
+    ? 'Il n\'y a pas de palier à ' + n + ' points dans la table : la performance la plus proche en donne ' + r[0] + '.'
+    : 'Performance minimale pour ' + n + ' points en ' + st.ev.toLowerCase() + '.';
+  out.innerHTML = '<div class="res">' + cmp + fmtVal(tb.kind, r[1], tb.manual) + cmp2 + '<small>' + esc(extra) + '</small></div>';
+}
+
+/* ---------- Combiné : salle (pentathlon) et estival (heptathlon filles, octathlon garçons) ---------- */
+// Points = INT(A*(B-T)^C) pour les courses, INT(A*(P-B)^C) pour les concours (P en cm ou en m selon unit).
+const CH = {
+  F50H:{kind:'run',A:32.17241,B:14,C:1.835,f:1},   M50H:{kind:'run',A:29.87531,B:13,C:1.92,f:1,round:true},
+  F1000:{kind:'time',A:0.068541,B:332,C:1.88,f:1}, M1000:{kind:'time',A:0.08713,B:305.5,C:1.85,f:1},
+  FHJ:{kind:'field',unit:'cm',A:1.84523,B:75,C:1.348}, MHJ:{kind:'field',unit:'cm',A:0.8465,B:75,C:1.42},
+  FSP:{kind:'field',unit:'m',A:56.0211,B:1.5,C:1.05},   MSP:{kind:'field',unit:'m',A:51.39,B:1.5,C:1.05},
+  FLJ:{kind:'field',unit:'cm',A:0.188807,B:210,C:1.41}, MLJ:{kind:'field',unit:'cm',A:0.14354,B:220,C:1.4},
+  MPV:{kind:'field',unit:'cm',A:0.2797,B:100,C:1.35},
+  F80H:{kind:'run',A:11.48911,B:22.5,C:1.835,f:1},  F100:{kind:'run',A:17.8570,B:16.5,C:1.81,f:1}, FJT:{kind:'field',unit:'m',A:15.9803,B:3.8,C:1.04},
+  M100H:{kind:'run',A:5.5767,B:26.5,C:1.92,f:1}, M100:{kind:'run',A:25.4347,B:18,C:1.81,f:1},
+  MJT:{kind:'field',unit:'m',A:10.14,B:7,C:1.08}, MDT:{kind:'field',unit:'m',A:12.91,B:4,C:1.1}
+};
+const COMB = {
+  salle:{
+    F:{title:'Total pentathlon', items:[
+      {ev:'50m haies',c:CH.F50H,d:'8,40'},{ev:'Hauteur',c:CH.FHJ,d:'1,40'},{ev:'Poids',c:CH.FSP,d:'8,50'},{ev:'Longueur',c:CH.FLJ,d:'4,60'},{ev:'1000m',c:CH.F1000,d:'3:20.00'}]},
+    M:{title:'Total pentathlon', items:[
+      {ev:'50m haies',c:CH.M50H,d:'8,00'},{ev:'Longueur',c:CH.MLJ,d:'5,20',alt:{ev:'Perche',c:CH.MPV,d:'2,80'}},{ev:'Poids',c:CH.MSP,d:'9,50'},{ev:'Hauteur',c:CH.MHJ,d:'1,50'},{ev:'1000m',c:CH.M1000,d:'3:05.00'}]}
+  },
+  estival:{
+    F:{title:'Total heptathlon', items:[
+      {ev:'80m haies',c:CH.F80H,d:'12,50'},{ev:'Hauteur',c:CH.FHJ,d:'1,40'},{ev:'Poids',c:CH.FSP,d:'8,50'},{ev:'100m',c:CH.F100,d:'13,50'},
+      {ev:'Longueur',c:CH.FLJ,d:'4,60'},{ev:'Javelot',c:CH.FJT,d:'25,00'},{ev:'1000m',c:CH.F1000,d:'3:20.00'}]},
+    M:{title:'Total octathlon', items:[
+      {ev:'100m haies',c:CH.M100H,d:'13,88'},{ev:'Poids',c:CH.MSP,d:'9,50'},{ev:'Perche',c:CH.MPV,d:'2,80'},{ev:'Javelot',c:CH.MJT,d:'30,00'},
+      {ev:'100m',c:CH.M100,d:'12,50'},{ev:'Hauteur',c:CH.MHJ,d:'1,50'},{ev:'Disque',c:CH.MDT,d:'25,00',lbl:'Disque (1,25 kg)'},{ev:'1000m',c:CH.M1000,d:'3:05.00'}]}
+  }
+};
+const combVals = {};
+function cKey(){ return cm + '_' + sex; }
+function cSpec(){ return COMB[cm][sex]; }
+function cState(){
+  const k = cKey();
+  if (!combVals[k]) combVals[k] = cSpec().items.map(it => ({val:it.d, alt:false}));
+  return combVals[k];
+}
+function cItem(i){ const it = cSpec().items[i]; return cState()[i].alt && it.alt ? it.alt : it; }
+function cLabel(it){ return it.lbl || label(it.ev); }
+function waPoints(c, perf){
+  const rd = c.round ? Math.round : Math.floor;   // 50 m haies garçons : arrondi au plus proche, sinon partie entière
+  if (c.kind === 'field'){ const p = c.unit === 'cm' ? perf * 100 : perf; return p > c.B ? rd(c.A * Math.pow(p - c.B, c.C)) : 0; }
+  const t = perf * c.f; return t < c.B ? rd(c.A * Math.pow(c.B - t, c.C)) : 0;
+}
+function waNeed(c, n){
+  const base = Math.pow((c.round ? n - 0.5 : n) / c.A, 1 / c.C); let v, g = 0;
+  if (c.kind === 'field'){
+    v = Math.ceil((c.B + base) / (c.unit === 'cm' ? 100 : 1) * 100 - 1e-9) / 100;
+    while (waPoints(c, v) < n && g++ < 300) v = Math.round((v + 0.01) * 100) / 100;
+    return v;
+  }
+  v = (c.B - base) / c.f; if (v <= 0) return null;
+  v = Math.floor(v * 100 + 1e-9) / 100;
+  while (v > 0 && waPoints(c, v) < n && g++ < 3000) v = Math.round((v - 0.01) * 100) / 100;
+  return v > 0 ? v : null;
+}
+function buildComb(){
+  const box = $('rowsComb'); box.innerHTML = '';
+  const spec = cSpec(), st = cState();
+  spec.items.forEach((_, i) => {
+    const it = cItem(i); const p = 'c' + i;
+    let evHtml;
+    if (spec.items[i].alt){
+      const a = spec.items[i], b = a.alt;
+      evHtml = '<select id="' + p + 'ev" aria-label="Épreuve ' + (i + 1) + '"><option value="0"' + (st[i].alt ? '' : ' selected') + '>' + cLabel(a) + '</option><option value="1"' + (st[i].alt ? ' selected' : '') + '>' + cLabel(b) + '</option></select>';
+    } else evHtml = '<div class="evname" id="' + p + 'ev">' + esc(cLabel(it)) + '</div>';
+    const holder = document.createElement('div');
+    holder.innerHTML = rowMarkup(p, evHtml, st[i].val, '', hintFor(it.c.kind));
+    box.appendChild(holder.firstChild);
+    if (spec.items[i].alt) $(p + 'ev').addEventListener('change', e => { st[i].alt = e.target.value === '1'; st[i].val = cItem(i).d; buildComb(); });
+    $(p + 'val').addEventListener('input', e => { st[i].val = e.target.value; updateComb(); });
+    $(p + 'chk').hidden = !it.chk;
+  });
+  updateComb(); buildCombInv(); buildConstTab();
+}
+function updateComb(){
+  let total = 0; const st = cState();
+  cSpec().items.forEach((_, i) => {
+    const it = cItem(i), c = it.c, p = 'c' + i;
+    const perf = parsePerf(st[i].val, c.kind);
+    const bad = perf === null || isNaN(perf);
+    const er = $(p + 'er'); let pts = 0;
+    if (bad){
+      er.hidden = false;
+      er.textContent = c.kind === 'time' ? 'Saisissez un temps au format 3:20.00.' : 'Saisissez une performance, par exemple ' + (c.kind === 'run' ? '8,20.' : '1,55.');
+    } else { er.hidden = true; pts = waPoints(c, perf); }
+    total += pts;
+    $(p + 'p').textContent = pts; setBar(p, pts, 1000);
+    $(p + 'chk').hidden = !it.chk;
+    const pb = $(p + 'pb'); pb.hidden = true;
+    if (athleteKey()){
+      const chrono = c.kind === 'run' ? 'elec' : null;
+      const best = bestFor(it.ev, chrono, c.kind);
+      $(p + 'in').textContent = recordText(c.kind, best, null);
+      if (best && !bad) pb.hidden = !beats(c.kind, perf, best);
+    } else $(p + 'in').textContent = '';
+  });
+  $('ctotal').textContent = total;
+  $('clabel').textContent = cSpec().title;
+  $('ckind').textContent = cm === 'salle' ? 'Pentathlon salle, points indicatifs' : (sex === 'M' ? 'Octathlon plein air, points indicatifs' : 'Heptathlon plein air, points indicatifs');
+}
+const cInv = {};
+function buildConstTab(){
+  const items = cSpec().items.flatMap(it => it.alt ? [it, it.alt] : [it]);
+  const g = x => String(x).replace('.', ',');
+  $('ctab').innerHTML = '<summary>Constantes utilisées (a, b, c)</summary><table><tr><th>Épreuve</th><th>a</th><th>b</th><th>c</th></tr>' +
+    items.map(it => '<tr><td>' + esc(cLabel(it)) + '</td><td>' + g(it.c.A) + '</td><td>' + g(it.c.B) + '</td><td>' + g(it.c.C) + '</td></tr>').join('') + '</table>';
+}
+function buildCombInv(){
+  const k = cKey(); const items = cSpec().items.flatMap(it => it.alt ? [it, it.alt] : [it]);
+  if (!cInv[k]) cInv[k] = {ev:items.find(x => x.ev === 'Hauteur') ? 'Hauteur' : items[0].ev, pts:'500'};
+  const st = cInv[k];
+  const opts = items.map(it => '<option value="' + it.ev + '"' + (it.ev === st.ev ? ' selected' : '') + '>' + esc(cLabel(it)) + '</option>').join('');
+  $('cinv').innerHTML =
+    '<div class="irow"><div class="field"><label for="cinvEv">Épreuve</label><select id="cinvEv">' + opts + '</select></div>' +
+    '<div class="field pts"><label for="cinvPts">Points</label><input id="cinvPts" type="text" inputmode="numeric" autocomplete="off" value="' + st.pts + '"></div>' +
+    '<button type="button" class="go" id="cinvGo">OK</button></div><div id="cinvRes" aria-live="polite"></div>';
+  $('cinvEv').addEventListener('change', e => { st.ev = e.target.value; calcCombInv(); });
+  $('cinvPts').addEventListener('input', e => { st.pts = e.target.value; });
+  $('cinvPts').addEventListener('keydown', e => { if (e.key === 'Enter') calcCombInv(); });
+  $('cinvGo').addEventListener('click', calcCombInv);
+  calcCombInv();
+}
+function calcCombInv(){
+  const st = cInv[cKey()]; const out = $('cinvRes');
+  const n = parseInt(String(st.pts).trim(), 10);
+  if (isNaN(n) || n < 1 || n > 1500){ out.innerHTML = '<div class="err">Saisissez un nombre de points entre 1 et 1500.</div>'; return; }
+  const items = cSpec().items.flatMap(it => it.alt ? [it, it.alt] : [it]);
+  const it = items.find(x => x.ev === st.ev) || items[0]; const c = it.c; const v = waNeed(c, n);
+  if (v === null){ out.innerHTML = '<div class="err">Ce nombre de points n\'est pas atteignable sur cette épreuve.</div>'; return; }
+  const txt = c.kind === 'field' ? 'Au moins ' + nf(v, 2) + ' m' : 'En ' + (c.kind === 'time' ? fmtTime(v) : nf(v, 2) + ' s') + ' ou moins';
+  out.innerHTML = '<div class="res">' + txt + '<small>Performance minimale pour ' + n + ' points, formule indicative (cette performance donne ' + waPoints(c, v) + ' points).</small></div>';
+}
+
+/* ---------- Navigation ---------- */
+function applyMode(){
+  $('tabTri').setAttribute('aria-pressed', mode === 'tri');
+  $('tabComb').setAttribute('aria-pressed', mode === 'comb');
+  $('viewTri').hidden = mode !== 'tri';
+  $('total').hidden = $('tlbl').hidden = mode !== 'tri';
+  $('ctotal').hidden = $('clabel').hidden = $('ckind').hidden = mode !== 'comb';
+  $('kind').hidden = mode !== 'tri'; $('recap').hidden = mode !== 'tri';
+  $('viewComb').hidden = mode !== 'comb';
+  $('sexF').setAttribute('aria-pressed', sex === 'F');
+  $('sexM').setAttribute('aria-pressed', sex === 'M');
+  $('venO').setAttribute('aria-pressed', venue === 'O');
+  $('venS').setAttribute('aria-pressed', venue === 'S');
+  if (cm !== (venue === 'S' ? 'salle' : 'estival')) cm = venue === 'S' ? 'salle' : 'estival';
+}
+function refresh(){ applyMode(); if (mode === 'comb') buildComb(); else buildSlots(); }
+function refreshCalc(){ if (mode === 'comb') updateComb(); else update(); }
+$('tabTri').addEventListener('click', () => { mode = 'tri'; refresh(); });
+$('tabComb').addEventListener('click', () => { mode = 'comb'; refresh(); });
+$('sexF').addEventListener('click', () => { sex = 'F'; refresh(); });
+$('sexM').addEventListener('click', () => { sex = 'M'; refresh(); });
+$('venO').addEventListener('click', () => { venue = 'O'; cm = 'estival'; refresh(); });
+$('venS').addEventListener('click', () => { venue = 'S'; cm = 'salle'; refresh(); });
+
+/* ---------- Enregistrement des résultats (capability db) ---------- */
+let DB = null, DL = null, canWrite = true;
+function todayIso(){ const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+function frDate(iso){ const p = String(iso || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : ''; }
+function say(text, good){ const m = $('svMsg'); m.textContent = text; m.className = good ? 'ok' : 'err'; }
+function discLabel(r){
+  if (r.discipline === 'combine_estival') return 'Combiné estival';
+  if (r.discipline === 'combine_salle' || r.discipline === 'combine') return 'Combiné salle';
+  return r.terrain || '';
+}
+
+function currentResult(){
+  const eps = []; let total = 0; let ok = true;
+  if (mode === 'comb'){
+    const st = cState();
+    cSpec().items.forEach((_, i) => {
+      const it = cItem(i), c = it.c;
+      const perf = parsePerf(st[i].val, c.kind);
+      if (perf === null || isNaN(perf)){ ok = false; return; }
+      const pts = waPoints(c, perf); total += pts;
+      const chrono = c.kind === 'run' ? 'elec' : null;
+      const best = bestFor(it.ev, chrono, c.kind);
+      eps.push({ev:it.ev, perf:String(st[i].val).trim(), chrono:chrono, pts:pts, pr: !!best && beats(c.kind, perf, best)});
+    });
+    return {ok:ok, total:total, eps:eps};
+  }
+  state[sex].forEach((s, i) => {
+    if (i === 3) return;
+    const e = T[sex][s.ev]; const tb = tableFor(s.ev, s.timing);
+    const perf = parsePerf(s.val, e.kind);
+    if (perf === null || isNaN(perf)){ ok = false; return; }
+    const pts = score(tb, perf); total += pts;
+    const chrono = e.kind === 'run' ? 'elec' : null;
+    const best = bestFor(s.ev, chrono, e.kind);
+    eps.push({ev:s.ev, perf:String(s.val).trim(), chrono:chrono, pts:pts, pr: !!best && beats(e.kind, perf, best)});
+  });
+  return {ok:ok, total:total, eps:eps};
+}
+async function saveRecord(){
+  const prenom = $('svPrenom').value.trim(), nom = $('svNom').value.trim(), date = $('svDate').value || todayIso(), lieu = $('svLieu').value.trim();
+  if (!prenom || !nom){ say('Saisissez le prénom et le nom.'); return; }
+  const r = currentResult();
+  if (!r.ok){ say(mode === 'comb' ? 'Complétez les performances de toutes les épreuves du combiné.' : 'Complétez les performances des trois épreuves du triathlon.'); return; }
+  const btn = $('svSave'); btn.disabled = true;
+  const discipline = mode === 'comb' ? (cm === 'estival' ? 'combine_estival' : 'combine_salle') : 'triathlon';
+  const terrain = mode === 'comb' ? (cm === 'estival' ? 'Plein air' : 'Salle') : (venue === 'S' ? 'Salle' : 'Plein air');
+  try {
+    await DB.collection('resultats').add({prenom:prenom, nom:nom, sexe:sex, discipline:discipline, terrain:terrain, lieu:lieu, date:date, total:r.total, epreuves:r.eps, createdAt:Date.now()});
+    say('Enregistré : ' + prenom + ' ' + nom + ', ' + r.total + ' points.', true);
+  } catch (e) {
+    const c = e && e.code;
+    say(c === 'invalid_argument' ? 'Votre accès à cette page est en lecture seule : impossible d\'enregistrer.' : c === 'quota_exceeded' ? 'L\'espace d\'enregistrement est plein.' : 'Enregistrement impossible, réessayez.');
+  } finally { btn.disabled = false; }
+}
+function recLine(e){ return esc(e.ev) + ' ' + esc(e.perf) + ' (' + e.pts + ' pts)' + (e.pr ? ' <span class="badge">PR</span>' : ''); }
+function renderList(){
+  const q = $('svSearch').value.trim().toLowerCase();
+  const list = records.filter(r => !q || ((r.prenom || '') + ' ' + (r.nom || '')).toLowerCase().includes(q));
+  $('svCount').textContent = records.length ? '(' + records.length + ')' : '';
+  const box = $('svList');
+  if (!list.length){
+    box.innerHTML = '<p class="sub">' + (records.length ? 'Aucun nom ne correspond à cette recherche.' : 'Aucun résultat enregistré pour le moment. Remplissez le prénom et le nom en haut de la page, puis appuyez sur Enregistrer.') + '</p>';
+    return;
+  }
+  box.innerHTML = list.map(r => {
+    const eps = Array.isArray(r.epreuves) ? r.epreuves : [];
+    return '<div class="rec"><div class="h"><div class="nm">' + esc(r.prenom) + ' ' + esc(r.nom) + '</div><div class="tot">' + esc(r.total) + ' pts</div></div>' +
+      '<div class="d">' + esc(frDate(r.date)) + ' · ' + (r.sexe === 'M' ? 'Garçon' : 'Fille') + ' · ' + esc(discLabel(r)) + (r.lieu ? ' · ' + esc(r.lieu) : '') + '</div>' +
+      '<div class="d">' + eps.map(recLine).join(' · ') + '</div>' +
+      '<div class="act"><button type="button" class="mini" data-act="load" data-id="' + esc(r.id) + '">Recharger</button>' +
+      '<button type="button" class="mini danger" data-act="del" data-id="' + esc(r.id) + '" data-arm="0">Supprimer</button></div></div>';
+  }).join('');
+}
+function loadRecord(r){
+  sex = r.sexe === 'M' ? 'M' : 'F';
+  const eps = Array.isArray(r.epreuves) ? r.epreuves : [];
+  if (r.discipline && r.discipline.indexOf('combine') === 0){
+    mode = 'comb'; cm = r.discipline === 'combine_estival' ? 'estival' : 'salle';
+    const st = cState();
+    cSpec().items.forEach((it, i) => {
+      const e = eps[i]; if (!e) return;
+      if (it.alt && e.ev === it.alt.ev) st[i].alt = true; else if (it.alt) st[i].alt = false;
+      if (cItem(i).ev === e.ev) st[i].val = e.perf;
+    });
+  } else {
+    mode = 'tri'; venue = r.terrain === 'Salle' ? 'S' : 'O';
+    const conv = e => ({ev:e.ev, val:e.perf, timing:e.chrono || 'elec'});
+    state[sex] = [0,1,2].map(i => eps[i] && T[sex][eps[i].ev] ? conv(eps[i]) : state[sex][i]).concat([state[sex][3]]);
+  }
+  $('svPrenom').value = r.prenom || ''; $('svNom').value = r.nom || ''; $('svLieu').value = r.lieu || ''; if (r.date) $('svDate').value = r.date;
+  refresh();
+  say('Résultat de ' + (r.prenom || '') + ' ' + (r.nom || '') + ' rechargé en haut de la page.', true);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function csvText(){
+  const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+  const head = ['Date','Prénom','Nom','Catégorie','Discipline','Plein air / Salle','Lieu','Total'];
+  for (let i = 1; i <= 8; i++) head.push('Épreuve ' + i, 'Performance ' + i, 'Points ' + i);
+  const rows = records.map(r => {
+    const eps = Array.isArray(r.epreuves) ? r.epreuves : [];
+    const a = [frDate(r.date), r.prenom, r.nom, r.sexe === 'M' ? 'Benjamin' : 'Benjamine', r.discipline && r.discipline.indexOf('combine') === 0 ? discLabel(r) : 'Triathlon', r.terrain, r.lieu, r.total];
+    for (let i = 0; i < 8; i++) a.push(eps[i] ? eps[i].ev : '', eps[i] ? eps[i].perf : '', eps[i] ? eps[i].pts : '');
+    return a.map(q).join(';');
+  });
+  return '﻿' + [head.map(q).join(';')].concat(rows).join('\r\n');
+}
+function storeUnavailable(text){
+  $('svCard').innerHTML = '<p class="sub" style="margin:0">' + text + '</p>';
+  $('svList').innerHTML = '';
+  $('svSearch').closest('.row').hidden = true;
+}
+async function initStore(){
+  const api = window.claude;
+  if (!api || !api.use){ storeUnavailable('L\'enregistrement est disponible quand la page est ouverte dans Claude, avec un compte connecté.'); return; }
+  let user = null;
+  try { DB = await api.use('db'); user = await api.use('user'); DL = await api.use('downloads'); } catch (e) { DB = null; }
+  if (!DB){ storeUnavailable('L\'enregistrement est disponible quand la page est ouverte dans Claude, avec un compte connecté.'); return; }
+  try { if (user && user.can) canWrite = (await user.can('data.write')) !== false; } catch (e) {}
+  if (!canWrite){ $('svSave').disabled = true; say('Votre accès est en lecture seule : vous pouvez consulter les résultats, pas en ajouter.'); }
+  $('svExport').hidden = !DL;
+  DB.collection('resultats').orderBy('createdAt', 'desc').limit(500).onSnapshot(snap => {
+    records = snap.docs.map(d => Object.assign({id:d.id}, d.data()));
+    renderList(); refreshCalc();
+  }, () => { $('svList').innerHTML = '<p class="err">Les résultats enregistrés ne peuvent pas être affichés pour le moment.</p>'; });
+}
+$('svDate').value = todayIso();
+$('svPrenom').addEventListener('input', refreshCalc);
+$('svNom').addEventListener('input', refreshCalc);
+$('svSave').addEventListener('click', saveRecord);
+$('svSearch').addEventListener('input', renderList);
+$('svExport').addEventListener('click', () => {
+  if (!records.length){ say('Aucun résultat à exporter.'); return; }
+  DL.save({filename:'triathlon-u16.csv', data:csvText()}).catch(e => { if (!e || e.code !== 'declined') say('Export impossible dans cet affichage.'); });
+});
+$('svList').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const r = records.find(x => x.id === b.dataset.id); if (!r) return;
+  if (b.dataset.act === 'load') loadRecord(r);
+  else if (b.dataset.act === 'del'){
+    if (b.dataset.arm !== '1'){
+      b.dataset.arm = '1'; b.textContent = 'Confirmer la suppression';
+      setTimeout(() => { if (b.isConnected){ b.dataset.arm = '0'; b.textContent = 'Supprimer'; } }, 4000);
+    } else {
+      DB.collection('resultats').doc(r.id).delete().catch(() => say('Suppression impossible avec votre accès.'));
+    }
+  }
+});
+refresh();
+renderList();
+initStore();
+</script>
+</body>
+</html>
