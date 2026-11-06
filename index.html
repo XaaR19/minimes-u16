@@ -751,6 +751,26 @@ $('svList').addEventListener('click', e => {
     }
   }
 });
+// Mémoire locale : on retrouve les valeurs saisies après actualisation (propre à cet appareil)
+const MEM_KEY = 'cotation-u16-v1';
+(function restore(){
+  try {
+    const m = JSON.parse(localStorage.getItem(MEM_KEY) || 'null'); if (!m) return;
+    if (m.sex === 'F' || m.sex === 'M') sex = m.sex;
+    if (m.venue === 'O' || m.venue === 'S') venue = m.venue;
+    if (m.mode === 'tri' || m.mode === 'comb') mode = m.mode;
+    if (m.cm === 'salle' || m.cm === 'estival') cm = m.cm;
+    for (const k of ['F', 'M']) {
+      if (Array.isArray(m.state && m.state[k]) && m.state[k].length === state[k].length) state[k] = m.state[k].map(x => ({ev: String(x.ev), val: String(x.val), timing: 'elec'}));
+      if (m.inv && m.inv[k]) inv[k] = Object.assign(inv[k], {ev: String(m.inv[k].ev), pts: String(m.inv[k].pts)});
+    }
+    if (typeof combVals === 'object' && m.combVals) for (const k in m.combVals) if (Array.isArray(m.combVals[k])) combVals[k] = m.combVals[k].map(x => ({val: x.val, alt: !!x.alt}));
+  } catch (e) {}
+})();
+function saveMem(){
+  try { localStorage.setItem(MEM_KEY, JSON.stringify({sex, venue, mode, cm, state, inv, combVals})); } catch (e) {}
+}
+['input', 'change', 'click'].forEach(ev => document.addEventListener(ev, () => setTimeout(saveMem, 50)));
 refresh();
 renderList();
 initStore();
