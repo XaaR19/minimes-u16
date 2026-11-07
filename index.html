@@ -6,7 +6,7 @@
 <meta property="og:title" content="Minimes U16 : points FFA">
 <meta property="og:description" content="Calcul des points triathlon et épreuves combinées, minimes filles et garçons.">
 <style>*,*::before,*::after{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0}</style>
-<title>Minimes U16 Express</title>
+<title>Minimes U16</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
 <style>
@@ -28,7 +28,9 @@ body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:1
   padding-block:0 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));}
 main{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
 .bar3w{position:sticky;top:0;z-index:20;background:var(--bg);padding:6px 0 8px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:5px}
-.bar3w .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.bar3w .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.exp{font:600 13px var(--f-body);padding:4px 12px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer}
+.exp[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .bar3w .u{font-family:var(--f-display);font-weight:700;font-size:26px;line-height:1.05;letter-spacing:.01em;color:var(--ink)}
 .bar3w .tb{display:flex;align-items:baseline;gap:8px;min-width:0}
 .bar3w .lbl{font:600 11px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
@@ -149,11 +151,9 @@ select,input{font:500 16px var(--f-body);color:var(--ink);background:var(--bg);b
 @media (prefers-reduced-motion: reduce){.bar i{transition:none}}
 </style>
 
-</head>
-<body>
 <main>
   <div class="bar3w">
-  <div class="top"><h1 class="u">Minimes U16</h1></div>
+  <div class="top"><h1 class="u">Minimes U16</h1><button type="button" class="exp" id="expBtn" aria-pressed="false" title="Mode expert : saisir les performances sans virgule ni point">Expert</button></div>
   <nav class="bar3" aria-label="Choix">
     <div class="seg" role="group" aria-label="Catégorie">
       <button type="button" id="sexF" aria-pressed="true" title="Minimes filles">MIF</button>
@@ -280,7 +280,21 @@ function fallbackEv(ev){
   const same = GROUPS.filter(g => g[2] === CAT[ev]).flatMap(g => g[1]).find(avail);
   return same || GROUPS.flatMap(g => g[1]).find(avail);
 }
+let expert = false;
+function expertToStd(str, kind){
+  const d = String(str).replace(/\D/g, ''); if (!d) return '';
+  if (kind === 'time') return (d.slice(0, -4) || '0') + ':' + d.slice(-4, -2).padStart(2, '0') + '.' + d.slice(-2).padStart(2, '0');
+  const x = d.padStart(3, '0'); return x.slice(0, -2) + ',' + x.slice(-2);
+}
+function stdToExpert(str, kind){
+  expert = false; const n = parsePerf(str, kind); expert = true;
+  if (n === null || isNaN(n)) return String(str).replace(/\D/g, '');
+  if (kind === 'time'){ const t = Math.round(n * 100), m = Math.floor(t / 6000), r = t - m * 6000; return String(m) + String(Math.floor(r / 100)).padStart(2, '0') + String(r % 100).padStart(2, '0'); }
+  return String(Math.round(n * 100));
+}
+const dispVal = (v, kind) => { v = String(v || '').trim(); return expert && v ? expertToStd(v, kind) : v; };
 function parsePerf(str, kind){
+  if (expert) str = expertToStd(str, kind);
   let s = String(str).trim().replace(/,/g, '.').replace(/[′’']/g, ':').replace(/[″”"]/g, '.');
   if (!s) return null;
   if (kind === 'time'){
@@ -340,7 +354,7 @@ const beats = (kind, perf, best) => kind === 'field' ? perf > best.val + 1e-9 : 
 /* ---------- Ligne d'épreuve : épreuve, performance, points ---------- */
 function rowMarkup(p, evHtml, val, maxLabel, hint){
   return '<div class="trow">' + evHtml +
-    '<input id="' + p + 'val" type="text" inputmode="decimal" autocomplete="off" aria-label="Performance" placeholder="' + hint + '" value="' + esc(val) + '">' +
+    '<input id="' + p + 'val" type="text" inputmode="' + (expert ? 'numeric' : 'decimal') + '" autocomplete="off" aria-label="Performance" placeholder="' + (expert ? String(hint).replace(/\D/g, '') : hint) + '" value="' + esc(val) + '">' +
     '<div class="pv"><span id="' + p + 'p">0</span>' + '' + '</div>' +
     '<div class="bar"><i id="' + p + 'b"></i></div>' +
     '<div class="info"><button type="button" class="mini" id="' + p + 'tm" hidden></button><span id="' + p + 'pb" class="badge" hidden>PR</span><span id="' + p + 'chk" class="chk" hidden>constantes à vérifier</span><span id="' + p + 'in"></span></div>' +
@@ -388,7 +402,7 @@ function update(){
       er.textContent = e.kind === 'time' ? 'Saisissez un temps au format 2:35.40.' : 'Saisissez une performance, par exemple ' + (run ? '11,50.' : '4,50.');
       if (!(s.val || '').trim()) { er.hidden = false; }
     } else { er.hidden = true; pts = score(tb, perf); }
-    if (i < 3){ total += pts; recap.push('<div class="rc"><span class="re">' + esc(label(s.ev).replace(/\s*\(.*?\)/g, '').replace('2000m marche', 'Marche')) + '</span><span class="rv">' + esc((s.val || '').trim() || '–') + '<i>' + (((s.val || '').trim() && e.kind !== 'time') ? (e.kind === 'run' ? 's' : 'm') : '') + '</i></span><b>' + pts + '</b></div>'); }
+    if (i < 3){ total += pts; recap.push('<div class="rc"><span class="re">' + esc(label(s.ev).replace(/\s*\(.*?\)/g, '').replace('2000m marche', 'Marche')) + '</span><span class="rv">' + esc(dispVal(s.val, e.kind) || '–') + '<i>' + (((s.val || '').trim() && e.kind !== 'time') ? (e.kind === 'run' ? 's' : 'm') : '') + '</i></span><b>' + pts + '</b></div>'); }
     $(p + 'p').textContent = pts; setBar(p, pts, 50);
     const chrono = run ? 'elec' : null;
     const pb = $(p + 'pb'); pb.hidden = true;
@@ -474,7 +488,7 @@ function cKey(){ return cm + '_' + sex; }
 function cSpec(){ return COMB[cm][sex]; }
 function cState(){
   const k = cKey();
-  if (!combVals[k]) combVals[k] = cSpec().items.map(it => ({val:it.d, alt:false}));
+  if (!combVals[k]) combVals[k] = cSpec().items.map(it => ({val:(expert && it.d ? stdToExpert(it.d, it.c.kind) : it.d), alt:false}));
   return combVals[k];
 }
 function cItem(i){ const it = cSpec().items[i]; return cState()[i].alt && it.alt ? it.alt : it; }
@@ -509,7 +523,7 @@ function buildComb(){
     const holder = document.createElement('div');
     holder.innerHTML = rowMarkup(p, evHtml, st[i].val, '', hintFor(it.c.kind));
     box.appendChild(holder.firstChild);
-    if (spec.items[i].alt) $(p + 'ev').addEventListener('change', e => { st[i].alt = e.target.value === '1'; st[i].val = cItem(i).d; buildComb(); });
+    if (spec.items[i].alt) $(p + 'ev').addEventListener('change', e => { st[i].alt = e.target.value === '1'; st[i].val = (expert && cItem(i).d ? stdToExpert(cItem(i).d, cItem(i).c.kind) : cItem(i).d); buildComb(); });
     $(p + 'val').addEventListener('input', e => { st[i].val = e.target.value; updateComb(); });
     $(p + 'chk').hidden = !it.chk;
   });
@@ -543,7 +557,7 @@ function updateComb(){
   k.textContent = cm === 'salle' ? 'Pentathlon salle' : (sex === 'M' ? 'Octathlon plein air' : 'Heptathlon plein air');
   const ABBR = {'50m haies':'50mH','80m haies':'80mH','100m haies':'100mH','Hauteur':'Haut.','Poids':'Poids','Longueur':'Long.','Javelot':'Jav.','Perche':'Perc.','Disque':'Disq.','1000m':'1000m','100m':'100m'};
   $('recap').classList.toggle('five', cSpec().items.length === 5);
-  $('recap').innerHTML = cSpec().items.map((_, i) => '<div class="rc"><span class="re">' + esc(ABBR[cItem(i).ev] || cItem(i).ev.slice(0, 5)) + '</span><span class="rv">' + esc((st[i].val || '').trim() || '–') + '<i>' + (((st[i].val || '').trim() && cItem(i).c.kind !== 'time') ? (cItem(i).c.kind === 'run' ? 's' : 'm') : '') + '</i></span><b>' + $('c' + i + 'p').textContent + '</b></div>').join('');
+  $('recap').innerHTML = cSpec().items.map((_, i) => '<div class="rc"><span class="re">' + esc(ABBR[cItem(i).ev] || cItem(i).ev.slice(0, 5)) + '</span><span class="rv">' + esc(dispVal(st[i].val, cItem(i).c.kind) || '–') + '<i>' + (((st[i].val || '').trim() && cItem(i).c.kind !== 'time') ? (cItem(i).c.kind === 'run' ? 's' : 'm') : '') + '</i></span><b>' + $('c' + i + 'p').textContent + '</b></div>').join('');
 }
 const cInv = {};
 function buildConstTab(){
@@ -751,6 +765,21 @@ $('svList').addEventListener('click', e => {
     }
   }
 });
+// Mode expert : saisie sans virgule ni point (1150 = 11,50 ; 30500 = 3:05.00)
+function setExpert(on){
+  if (on === expert) return;
+  const conv = (v, kind) => on ? stdToExpert(v, kind) : (String(v).trim() ? expertToStd(v, kind) : '');
+  expert = on;
+  expert = !on;   // les conversions lisent l'ancien format
+  for (const k of ['F', 'M']) state[k].forEach(x => { const e = T[k][x.ev]; if (e) x.val = conv(x.val, e.kind); });
+  if (typeof combVals === 'object') for (const k in combVals){
+    const [mm, sx] = k.split('_'); const spec = COMB[mm] && COMB[mm][sx]; if (!spec) continue;
+    combVals[k].forEach((x, i) => { const it = spec.items[i]; const c = (x.alt && it.alt ? it.alt : it).c; x.val = conv(x.val, c.kind); });
+  }
+  expert = on;
+  refresh();
+}
+$('expBtn').addEventListener('click', () => { setExpert(!expert); $('expBtn').setAttribute('aria-pressed', expert); });
 // Mémoire locale : on retrouve les valeurs saisies après actualisation (propre à cet appareil)
 const MEM_KEY = 'cotation-u16-v1';
 (function restore(){
@@ -759,6 +788,8 @@ const MEM_KEY = 'cotation-u16-v1';
     if (m.sex === 'F' || m.sex === 'M') sex = m.sex;
     if (m.venue === 'O' || m.venue === 'S') venue = m.venue;
     if (m.mode === 'tri' || m.mode === 'comb') mode = m.mode;
+    expert = m.expert === true;
+    $('expBtn').setAttribute('aria-pressed', expert);
     if (m.cm === 'salle' || m.cm === 'estival') cm = m.cm;
     for (const k of ['F', 'M']) {
       if (Array.isArray(m.state && m.state[k]) && m.state[k].length === state[k].length) state[k] = m.state[k].map(x => ({ev: String(x.ev), val: String(x.val), timing: 'elec'}));
@@ -768,12 +799,13 @@ const MEM_KEY = 'cotation-u16-v1';
   } catch (e) {}
 })();
 function saveMem(){
-  try { localStorage.setItem(MEM_KEY, JSON.stringify({sex, venue, mode, cm, state, inv, combVals})); } catch (e) {}
+  try { localStorage.setItem(MEM_KEY, JSON.stringify({sex, venue, mode, cm, expert, state, inv, combVals})); } catch (e) {}
 }
 ['input', 'change', 'click'].forEach(ev => document.addEventListener(ev, () => setTimeout(saveMem, 50)));
 refresh();
 renderList();
 initStore();
 </script>
+
 </body>
 </html>
